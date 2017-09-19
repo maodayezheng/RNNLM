@@ -11,6 +11,6 @@ class BahdanauAligment(object):
         self.attend_dim = attend_dim
         self.state_dim = state_dim
 
-    def alignment_score(self, x, states):
+    #def alignment_score(self, x, states):
 
 
