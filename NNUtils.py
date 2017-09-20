@@ -27,14 +27,14 @@ class BahdanauAligment(object):
         b = b.reshape((1, 1, self.attend_dim))
         n, d = x.shape
         e = T.dot(x, self.weight_W)
-        e = e.reshape((1, n, self.attend_dim))
-        l, n, s = states.shape
+        e = e.reshape((n, 1, self.attend_dim))
+        n, l, s = states.shape
         states = states.reshape((n*l, s))
         s = T.dot(states, self.weight_U)
-        s = s.reshape((l, n, self.attend_dim))
+        s = s.reshape((n, l, self.attend_dim))
         content = T.tanh(e + s + b)
         score = T.dot(content.reshape((n*l, self.attend_dim)), self.weight_v)
-        score = score.reshape((l, n))
+        score = score.reshape((n, l))
         return score
 
     def get_params(self):
