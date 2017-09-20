@@ -1,6 +1,6 @@
 #$ -l h_rt=150:0:0
-#$ -l tmem=15G
-#$ -l h_vmem=30G
+#$ -l tmem=10G
+#$ -l h_vmem=20G
 #$ -P gpu
 #$ -l gpu=1,gpu_titanxp=1
 #$ -S /bin/bash
@@ -19,12 +19,12 @@ DIR="$( cd -P "$( dirname "${SOURCE}" )" && pwd )"
 
 OUT_DIR=code_outputs/$(date +%Y_%m_%d_%H_%M_%S)
 
-cd TranslationReadWrite/
+cd RNNLM/
 echo $PWD
 
 mkdir ${OUT_DIR}
 
-PYTHON_FILE=translation_experiment.py
+PYTHON_FILE=Training.py
 
 cp ${PYTHON_FILE} ${OUT_DIR}/${PYTHON_FILE}
 
