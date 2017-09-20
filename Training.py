@@ -1,9 +1,10 @@
-from RNNLM import ContextRNNLM as Model
 import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from RNNLM import ContextRNNLM as Model
 import time
 import json
 import lasagne
-import os
 import pickle as cPickle
 import numpy as np
 
