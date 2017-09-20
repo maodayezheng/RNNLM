@@ -13,17 +13,17 @@ main_dir = sys.argv[0]
 out_dir = sys.argv[2]
 batch_size = 25
 sample_groups = 10
-epoch = 4
-vocab_size = 500
-embed_dim = 128
-hid_dim = 256
-att_dim = 128
+epoch = 0.1
+vocab_size = 8194
+embed_dim = 2
+hid_dim = 4
+att_dim = 2
 optimizer = lasagne.updates.adam
 learning_rate = 1e-4
 pre_trained = False
 restore_date = "2017_08_30_16_20_53/"
 restore_params = "final_model_params.save"
-training_data_file = "BPE/train50.tok.bpe.32000.txt"
+data_directory = "Data/sentence_20k/"
 
 if __name__ == '__main__':
 
@@ -40,14 +40,14 @@ if __name__ == '__main__':
     train_data = None
 
     # Load training and validation data
-    with open("SentenceData/" + training_data_file, "r") as dataset:
+    with open(data_directory + "training_idx.txt", "r") as dataset:
         train_data = json.loads(dataset.read())
 
     validation_data = None
-    with open("SentenceData/BPE/news2013.tok.bpe.32000.txt", "r") as dev:
+    with open(data_directory + "test_idx.txt", "r") as dev:
         validation_data = json.loads(dev.read())
 
-    validation_data = sorted(validation_data, key=lambda d: max(len(d[0]), len(d[1])))
+    validation_data = sorted(validation_data, key=lambda d:len(d))
     len_valid = len(validation_data)
     splits = len_valid % batch_size
     validation_data = validation_data[:-splits]
@@ -81,8 +81,12 @@ if __name__ == '__main__':
     iters = int(data_size * epoch / (batch_size * sample_groups) + 1)
     print(" The number of iterations : " + str(iters))
 
-    training_loss = []
-    validation_loss = []
+    rnn_training_loss = []
+    selection_training_loss = []
+    total_training_loss = []
+    rnn_validation_loss = []
+    selection_validation_loss = []
+    total_validation_loss = []
 
     for i in range(iters):
         batch_indices = np.random.choice(len(train_data), batch_size * sample_groups, replace=False)
@@ -92,8 +96,6 @@ if __name__ == '__main__':
         mini_batch = np.array(mini_batch)
         mini_batchs = np.split(mini_batch, sample_groups)
         loss = None
-        read_attention = None
-        write_attention = None
         for m in mini_batchs:
             l = len(m[-1])
             source = None
@@ -106,42 +108,69 @@ if __name__ == '__main__':
                     source = s.reshape((1, s.shape[0]))
                 else:
                     source = np.concatenate([source, s.reshape((1, s.shape[0]))])
-
+            # total_loss, rnn_loss, selection_loss, average_selection, greedy_preds
             output = train_step(source)
+
             iter_time = time.clock() - start
             loss = output[0]
-            training_loss.append(loss)
+            total_training_loss.append(output[0])
+            rnn_training_loss.append(output[1])
+            selection_training_loss.append(output[2])
 
             if i % int(0.1*iters) == 0:
                 print("Training time " + str(iter_time) + " sec with sentence length " + str(l))
-                print("Total loss ")
-                print("RNN loss ")
-                print("Selection loss")
-                print("Average number of selection ")
+                print("Total loss " + str(output[0]))
+                print("RNN loss " + str(output[1]))
+                print("Selection loss" + str(output[2]))
+                print("Average number of selection " + str(output[3]))
 
         if i % int(0.05*iters) == 0:
-            valid_loss = 0
+            total_valid_loss = 0
+            rnn_valid_loss = 0
+            select_valid_loss = 0
             p = 0
             v_out = None
             for pair in validation_pair:
                 p += 1
                 v_out = valid_step(pair)
-                valid_loss += v_out[0]
+                total_valid_loss += v_out[0]
+                rnn_valid_loss += v_out[1]
+                select_valid_loss += v_out[2]
 
-            print("The loss on testing set is : " + str(valid_loss / p))
-            validation_loss.append(valid_loss / p)
+            print("##### Validation #####")
+            print(" Total loss per data point : " + str(total_valid_loss / p))
+            print(" RNN loss : " + str(rnn_valid_loss / p))
+            print(" Selection loss : " + str(select_valid_loss / p))
+            print("##### ########## #####")
+            total_validation_loss.append(total_valid_loss / p)
+            rnn_validation_loss.append(rnn_valid_loss/p)
+            selection_validation_loss.append(select_valid_loss / p)
 
         if i % int(0.1*iters) == 0 and i is not 0:
             print("Params saved at iteration " + str(i))
-            np.save(os.path.join(out_dir, 'training_loss.npy'), training_loss)
-            np.save(os.path.join(out_dir, 'validation_loss'), validation_loss)
+            np.save(os.path.join(out_dir, 'total_training_loss.npy'), total_training_loss)
+            np.save(os.path.join(out_dir, 'total_validation_loss'), total_validation_loss)
+
+            np.save(os.path.join(out_dir, 'rnn_training_loss.npy'), rnn_training_loss)
+            np.save(os.path.join(out_dir, 'rnn_validation_loss'), rnn_validation_loss)
+
+            np.save(os.path.join(out_dir, 'select_training_loss.npy'), selection_training_loss)
+            np.save(os.path.join(out_dir, 'select_validation_loss'), selection_validation_loss)
+
             with open(os.path.join(out_dir, 'model_params.save'), 'wb') as f:
                 cPickle.dump(model.get_param_values(), f, protocol=cPickle.HIGHEST_PROTOCOL)
                 f.close()
 
-    np.save(os.path.join(out_dir, 'training_loss.npy'), training_loss)
-    np.save(os.path.join(out_dir, 'validation_loss.npy'), validation_loss)
-    with open(os.path.join(out_dir, 'final_model_params.save'), 'wb') as f:
+    np.save(os.path.join(out_dir, 'total_training_loss.npy'), total_training_loss)
+    np.save(os.path.join(out_dir, 'total_validation_loss'), total_validation_loss)
+
+    np.save(os.path.join(out_dir, 'rnn_training_loss.npy'), rnn_training_loss)
+    np.save(os.path.join(out_dir, 'rnn_validation_loss'), rnn_validation_loss)
+
+    np.save(os.path.join(out_dir, 'select_training_loss.npy'), selection_training_loss)
+    np.save(os.path.join(out_dir, 'select_validation_loss'), selection_validation_loss)
+
+    with open(os.path.join(out_dir, 'model_params.save'), 'wb') as f:
         cPickle.dump(model.get_param_values(), f, protocol=cPickle.HIGHEST_PROTOCOL)
         f.close()
     print("Finished training ")

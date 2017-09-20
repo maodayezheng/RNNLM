@@ -44,8 +44,9 @@ class ContextRNNLM(NN, LM):
         alignment_scores -= clip.reshape((n, 1))
         alignment_scores = T.exp(alignment_scores)
         valid_alignments = selection * mask * alignment_scores[:, :-1]
-        normalizor = T.sum(valid_alignments, axis=-1) + alignment_scores[:, -1]
-        valid_alignments = T.concatenate([valid_alignments, alignment_scores[:, -1].reshape((n, 1))], axis=-1)
+        s = alignment_scores[:, -1]
+        normalizor = T.sum(valid_alignments, axis=-1) + s
+        valid_alignments = T.concatenate([valid_alignments, s.reshape((n, 1))], axis=-1)
         valid_score = T.true_div(valid_alignments, normalizor.reshape((n, 1)))
         context = T.sum(valid_score.reshape((n, l, 1)) * candidates, axis=1)
 
@@ -65,20 +66,20 @@ class ContextRNNLM(NN, LM):
         # Create input mask
         input_embedding = get_output(self.input_embedding, source)
         n, l = encode_mask.shape
-        encode_mask = encode_mask.reshape((n, l, 1))
+        encode_mask = encode_mask
 
         # Compute the content of input
-        content = T.sum(encode_mask * input_embedding, axis=1)
+        content = T.sum(encode_mask.reshape((n, l, 1)) * input_embedding, axis=1)
 
         # Compute the selected words
         content = get_output(self.content_encoder, content)
         context_score = self.selector(content, input_embedding)
         selective_probs = T.nnet.sigmoid(context_score)
-        selection = self.selector(selective_probs)
+        selection = self.sampler(selective_probs)
 
         # Init the RNN
         h_init = content
-        start_init = T.zeros((n, self.embedding_dim), dtype="int8")
+        start_init = T.zeros((n, self.embedding_dim), dtype="float32")
         dense_content = get_output(self.content_compressor, content)
         time_step = T.arange(l)
         candidates = T.concatenate([input_embedding, dense_content.reshape((n, 1, self.embedding_dim))], axis=1)
@@ -86,7 +87,7 @@ class ContextRNNLM(NN, LM):
         ([x, hidden, o, scores, greedy_preds], update) = scan(self.rnnStep,
                                                               outputs_info=[start_init, h_init, None, None, None],
                                                               sequences=[time_step],
-                                                              non_sequences=[selection, input_embedding, candidates,
+                                                              non_sequences=[selection, candidates,
                                                                              out_embed.T, encode_mask])
 
         return selective_probs, selection, o, scores, greedy_preds
