@@ -1,12 +1,13 @@
-import sys
-import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from RNNLM import ContextRNNLM as Model
-import time
 import json
-import lasagne
+import os
 import pickle as cPickle
+import sys
+import time
+
+import lasagne
 import numpy as np
+
+from Models.RNNLM import ContextRNNLM as Model
 
 sys.setrecursionlimit(5000000)
 np.set_printoptions(threshold=1000000)

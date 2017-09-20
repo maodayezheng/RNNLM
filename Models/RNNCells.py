@@ -1,8 +1,9 @@
-import theano.tensor as T
 import lasagne
-from lasagne.nonlinearities import sigmoid, tanh
-from NNUtils import NN
+import theano.tensor as T
 from lasagne.layers import get_output
+from lasagne.nonlinearities import sigmoid, tanh
+
+from Models.NNUtils import NN
 
 
 class GRU(NN):
