@@ -2,18 +2,12 @@ import lasagne
 import theano.tensor as T
 from theano import scan, function
 from theano.gradient import zero_grad
+from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 from lasagne.layers import get_output
 from lasagne.nonlinearities import tanh
-from NNUtils import NN, LM, ContextSelector, BahdanauAligment, StraightThrough
+from NNUtils import NN, LM, ContextSelector, BahdanauAligment
 from RNNCells import GRU
-
-
-class RNNLM(LM):
-    print("Start implementing the RNNLM")
-
-
-class FreeRNNLM(LM):
-    print("RNNLM free run")
+random = RandomStreams()
 
 
 class ContextRNNLM(NN, LM):
@@ -28,7 +22,6 @@ class ContextRNNLM(NN, LM):
 
         self.selector = ContextSelector(hid_dim, embed_dim)
         self.alignment = BahdanauAligment(hid_dim, embed_dim, att_dim)
-        self.sampler = StraightThrough()
         self.cell = GRU(2*embed_dim+hid_dim, hid_dim)
 
         self.content_encoder = self.mlp(embed_dim, hid_dim, activation=tanh)
@@ -53,20 +46,19 @@ class ContextRNNLM(NN, LM):
         # RNN computation
         rnn_in = T.concatenate([x, context], axis=-1)
         h_next = self.cell(rnn_in, h)
-        o = get_output(self.output_layer, h_next)
+        output = T.concatenate([x, context, h], axis=-1)
+        output = get_output(self.output_layer, output)
 
         # Get the word for next time step
-        o = T.concatenate([x, context, o], axis=-1)
-        scores = T.dot(o, output_embed)
+        scores = T.dot(output, output_embed)
         greedy_predictions = zero_grad(T.argmax(scores, axis=-1))
         x_next = get_output(self.input_embedding, greedy_predictions)
-        return x_next, h_next, o, scores, greedy_predictions
+        return x_next, h_next, output, scores, greedy_predictions
 
     def forward(self, source, encode_mask):
         # Create input mask
         input_embedding = get_output(self.input_embedding, source)
         n, l = encode_mask.shape
-        encode_mask = encode_mask
 
         # Compute the content of input
         content = T.sum(encode_mask.reshape((n, l, 1)) * input_embedding, axis=1)
@@ -75,8 +67,10 @@ class ContextRNNLM(NN, LM):
         content = get_output(self.content_encoder, content)
         context_score = self.selector(content, input_embedding)
         selective_probs = T.nnet.sigmoid(context_score)
-        selection = self.sampler(selective_probs)
 
+        # Convert to binary
+        threshold = random.uniform(size=selective_probs.shape, low=0.0, high=1.0)
+        selection = T.cast(T.gt(selective_probs + threshold, 1), "float32")
         # Init the RNN
         h_init = content
         start_init = T.zeros((n, self.embedding_dim), dtype="float32")
@@ -122,7 +116,7 @@ class ContextRNNLM(NN, LM):
         selection_loss = T.mean(T.sum(-T.log(1.0 - selective_probs) * valid_selection, axis=1) / num_selection)
         average_selection = T.mean(valid_selection)
         # total loss
-        total_loss = rnn_loss + selection_loss
+        total_loss = rnn_loss + 0.1*selection_loss
 
         return source, total_loss, rnn_loss, selection_loss, greedy_preds, average_selection
 
