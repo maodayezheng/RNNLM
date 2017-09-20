@@ -20,11 +20,10 @@ hid_dim = 256
 att_dim = 128
 optimizer = lasagne.updates.adam
 learning_rate = 1e-4
-pre_trained = True
+pre_trained = False
 restore_date = "2017_08_30_16_20_53/"
 restore_params = "final_model_params.save"
 training_data_file = "BPE/train50.tok.bpe.32000.txt"
-show_address = False
 
 if __name__ == '__main__':
 
@@ -64,7 +63,6 @@ if __name__ == '__main__':
         l = len(m[-1])
         start = time.clock()
         source = None
-        target = None
         for datapoint in m:
             s = np.array(datapoint[0])
             if len(s) != l:
@@ -80,6 +78,7 @@ if __name__ == '__main__':
     # calculate required iterations
     data_size = len(train_data)
     print(" The training data size : " + str(data_size))
+    iters = int(data_size * epoch / (batch_size * sample_groups) + 1)
     print(" The number of iterations : " + str(iters))
 
     training_loss = []
@@ -113,30 +112,26 @@ if __name__ == '__main__':
             loss = output[0]
             training_loss.append(loss)
 
-            if i % 1000 == 0:
-                print("training time " + str(iter_time) + " sec with sentence length " + str(l)
-                      + " training loss : " + str(loss))
+            if i % int(0.1*iters) == 0:
+                print("Training time " + str(iter_time) + " sec with sentence length " + str(l))
+                print("Total loss ")
+                print("RNN loss ")
+                print("Selection loss")
+                print("Average number of selection ")
 
-        if i % 500 == 0:
+        if i % int(0.05*iters) == 0:
             valid_loss = 0
             p = 0
             v_out = None
             for pair in validation_pair:
                 p += 1
-                v_out = validation(pair[0], pair[1])
+                v_out = valid_step(pair)
                 valid_loss += v_out[0]
 
             print("The loss on testing set is : " + str(valid_loss / p))
             validation_loss.append(valid_loss / p)
-            if i % 10000 == 0 and show_address:
-                v_r = v_out[1]
-                for n in range(1):
-                    for t in range(v_r.shape[0]):
-                        print("======")
-                        print(" Source " + str(v_r[t, n]))
-                        print("")
 
-        if i % 2000 == 0 and i is not 0:
+        if i % int(0.1*iters) == 0 and i is not 0:
             print("Params saved at iteration " + str(i))
             np.save(os.path.join(out_dir, 'training_loss.npy'), training_loss)
             np.save(os.path.join(out_dir, 'validation_loss'), validation_loss)
