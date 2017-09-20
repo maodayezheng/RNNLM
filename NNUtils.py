@@ -1,23 +1,25 @@
-import theano.tensor as T
 import numpy as np
 import theano
+import theano.tensor as T
 from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
+from theano.tensor.raw_random import RandomStreamsBase
 from lasagne.layers import EmbeddingLayer, InputLayer, DenseLayer
 import lasagne
 from lasagne.nonlinearities import linear
 random = RandomStreams()
+sampler = RandomStreamsBase()
 
 
 class BahdanauAligment(object):
     def __init__(self, input_dim, state_dim, attend_dim):
         v = np.random.uniform(-0.05, 0.05, size=(input_dim, attend_dim))
-        self.weight_W = theano.shared(value=v, name="att_weight_W").astype(theano.config.floatX)
+        self.weight_W = theano.shared(value=v.astype(theano.config.floatX), name="att_weight_W")
         v = np.random.uniform(-0.05, 0.05, size=(state_dim, attend_dim))
-        self.weight_U = theano.shared(value=v, name="att_weight_U").astype(theano.config.floatX)
+        self.weight_U = theano.shared(value=v.astype(theano.config.floatX), name="att_weight_U")
         v = np.zeros((attend_dim, )).astype(theano.config.floatX)
         self.bias = theano.shared(value=v, name="att_bias")
         v = np.random.uniform(-0.05, 0.05, size=(attend_dim,))
-        self.weight_v = theano.shared(value=v, name='att_weigth_v').astype(theano.config.floatX)
+        self.weight_v = theano.shared(value=v.astype(theano.config.floatX), name='att_weigth_v')
         self.input_dim = input_dim
         self.attend_dim = attend_dim
         self.state_dim = state_dim
@@ -38,7 +40,7 @@ class BahdanauAligment(object):
         return score
 
     def get_params(self):
-        return [self.weight_W, self.weight_U, self.weight_v, self.bias]
+        return [self.bias, self.weight_W, self.weight_U, self.weight_v]
 
     def get_params_value(self):
         return [self.weight_W.get_value(), self.weight_U.get_value(), self.weight_v.get_value(), self.bias.get_value()]
@@ -53,9 +55,9 @@ class BahdanauAligment(object):
 class ContextSelector(object):
     def __init__(self, input_dim, state_dim):
         v = np.random.uniform(-0.05, 0.05, size=(input_dim, state_dim))
-        self.weight_W = theano.shared(value=v, name="ads_weight_W").astype(theano.config.floatX)
-        v = np.zeros((state_dim, )).astype(theano.config.floatX)
-        self.bias = theano.shared(value=v, name="ads_bias")
+        self.weight_W = theano.shared(value=v.astype(theano.config.floatX), name="ads_weight_W")
+        v = np.zeros((state_dim, ))
+        self.bias = theano.shared(value=v.astype(theano.config.floatX), name="ads_bias")
         self.input_dim = input_dim
         self.state_dim = state_dim
 
@@ -77,28 +79,6 @@ class ContextSelector(object):
         self.bias.set_value(params[1])
 
 
-class StraightThrough(theano.Op):
-    __props__ = ()
-
-    def make_node(self, x):
-        x = theano.tensor.as_tensor_variable(x)
-        return theano.Apply(self, [x], [x.type()])
-
-    def perform(self, node, inputs, output_storage, params=None):
-        x = inputs[0]
-        z = output_storage[0]
-        threshold = random.uniform(size=x.shape, low=0.0, high=1.0)
-        samples = T.cast(T.gt(x, threshold), "float32")
-        z[0] = samples
-
-    def infer_shape(self, node, i0_shapes):
-        return i0_shapes
-
-    def grad(self, inputs, output_grads):
-        x = inputs[0]
-        return [T.ones(shape=x.shape)]
-
-
 class LM(object):
     def embedding(self, input_dim, cats, output_dim):
         words = np.random.uniform(-0.05, 0.05, (cats, output_dim)).astype("float32")
@@ -113,8 +93,7 @@ class NN(object):
         layer = InputLayer((None, input_size))
         if n_layers > 1:
             for i in range(n_layers - 1):
-                layer = DenseLayer(layer, output_size, W=lasagne.init.GlorotUniform(),
-                                                  b=lasagne.init.Constant(0.0))
+                layer = DenseLayer(layer, output_size, W=lasagne.init.GlorotUniform(), b=lasagne.init.Constant(0.0))
         h = DenseLayer(layer, output_size, nonlinearity=activation, W=lasagne.init.GlorotUniform(),
                        b=lasagne.init.Constant(0.0))
 

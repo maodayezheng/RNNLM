@@ -13,7 +13,7 @@ main_dir = sys.argv[0]
 out_dir = sys.argv[2]
 batch_size = 25
 sample_groups = 10
-epoch = 0.1
+epoch = 1
 vocab_size = 8194
 embed_dim = 2
 hid_dim = 4
@@ -50,7 +50,8 @@ if __name__ == '__main__':
     validation_data = sorted(validation_data, key=lambda d:len(d))
     len_valid = len(validation_data)
     splits = len_valid % batch_size
-    validation_data = validation_data[:-splits]
+    if splits != 0:
+        validation_data = validation_data[:-splits]
     validation_data = np.array(validation_data)
     print(" The chosen validation size : " + str(len(validation_data)))
     g = int(len(validation_data) / batch_size)
@@ -64,7 +65,7 @@ if __name__ == '__main__':
         start = time.clock()
         source = None
         for datapoint in m:
-            s = np.array(datapoint[0])
+            s = np.array(datapoint)
             if len(s) != l:
                 s = np.append(s, [-1] * (l - len(s)))
 
@@ -101,7 +102,7 @@ if __name__ == '__main__':
             source = None
             start = time.clock()
             for datapoint in m:
-                s = np.array(datapoint[0])
+                s = np.array(datapoint)
                 if len(s) != l:
                     s = np.append(s, [-1] * (l - len(s)))
                 if source is None:
@@ -121,8 +122,9 @@ if __name__ == '__main__':
                 print("Training time " + str(iter_time) + " sec with sentence length " + str(l))
                 print("Total loss " + str(output[0]))
                 print("RNN loss " + str(output[1]))
-                print("Selection loss" + str(output[2]))
+                print("Selection loss " + str(output[2]))
                 print("Average number of selection " + str(output[3]))
+                print()
 
         if i % int(0.05*iters) == 0:
             total_valid_loss = 0
@@ -142,12 +144,14 @@ if __name__ == '__main__':
             print(" RNN loss : " + str(rnn_valid_loss / p))
             print(" Selection loss : " + str(select_valid_loss / p))
             print("##### ########## #####")
+            print()
             total_validation_loss.append(total_valid_loss / p)
             rnn_validation_loss.append(rnn_valid_loss/p)
             selection_validation_loss.append(select_valid_loss / p)
 
         if i % int(0.1*iters) == 0 and i is not 0:
             print("Params saved at iteration " + str(i))
+            print()
             np.save(os.path.join(out_dir, 'total_training_loss.npy'), total_training_loss)
             np.save(os.path.join(out_dir, 'total_validation_loss'), total_validation_loss)
 
