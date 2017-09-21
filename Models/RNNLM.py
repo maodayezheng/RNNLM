@@ -36,7 +36,8 @@ class ContextRNNLM(NN, LM):
         # Compute the alignment score
         alignment_scores = self.alignment(h, candidates)
         clip = zero_grad(T.max(alignment_scores, axis=-1))
-        alignment_scores = T.exp(alignment_scores - clip.reshape((n, 1)))
+        alignment_scores = alignment_scores - clip.reshape((n, 1))
+        alignment_scores = T.exp(alignment_scores)
         valid_alignments = selection * mask * alignment_scores[:, :-1]
         s = alignment_scores[:, -1]
         normalizor = T.sum(valid_alignments, axis=-1) + s
