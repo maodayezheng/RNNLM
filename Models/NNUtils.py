@@ -36,7 +36,10 @@ class BahdanauAligment(object):
         s = s.reshape((n, l, self.attend_dim))
         content = T.tanh(e + s + b)
         score = T.dot(content.reshape((n*l, self.attend_dim)), self.weight_v)
+        score = theano.printing.Print("The bahdanau score 1 ")(score)
         score = score.reshape((n, l))
+        score = theano.printing.Print("The bahdanau score 2 ")(score)
+
         return score
 
     def get_params(self):

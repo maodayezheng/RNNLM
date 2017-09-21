@@ -37,6 +37,7 @@ class ContextRNNLM(NN, LM):
         # Compute the alignment score
         alignment_scores = self.alignment(h, candidates)
         clip = zero_grad(T.max(alignment_scores, axis=-1))
+        clip = theano.printing.Print("The clip ")(clip)
         alignment_scores = alignment_scores - clip.reshape((n, 1))
         alignment_scores = theano.printing.Print("The alignment score 1 ")(alignment_scores)
         alignment_scores = T.exp(alignment_scores)
