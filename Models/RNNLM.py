@@ -45,6 +45,7 @@ class ContextRNNLM(NN, LM):
         normalizor = T.sum(valid_alignments, axis=-1) + s
         valid_alignments = T.concatenate([valid_alignments, s.reshape((n, 1))], axis=-1)
         valid_score = T.true_div(valid_alignments, normalizor.reshape((n, 1)))
+        valid_score = theano.printing.Print(" The valid score 2 ")(valid_score)
         context = T.sum(valid_score.reshape((n, l, 1)) * candidates, axis=1)
 
         # RNN computation
@@ -55,7 +56,7 @@ class ContextRNNLM(NN, LM):
 
         # Get the word for next time step
         scores = T.dot(output, output_embed)
-        greedy_predictions = zero_grad(T.argmax(scores, axis=-1))
+        greedy_predictions = zero_grad(T.argmax(scores, axis=-1, keepdims=True))
         x_next = get_output(self.input_embedding, greedy_predictions)
         return x_next, h_next, output, scores, greedy_predictions
 
