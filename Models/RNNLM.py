@@ -37,8 +37,10 @@ class ContextRNNLM(NN, LM):
         # Compute the alignment score
         alignment_scores = self.alignment(h, candidates)
         alignment_scores = T.exp(alignment_scores)
-        alignment_scores = theano.printing.Print("The alignment score 2 ")(alignment_scores)
+        alignment_scores = theano.printing.Print(" The alignment score 2 ")(alignment_scores)
         valid_alignments = selection * mask * alignment_scores[:, :-1]
+        valid_alignments = theano.printing.Print(" The valid score 1 ")(valid_alignments)
+
         s = alignment_scores[:, -1]
         normalizor = T.sum(valid_alignments, axis=-1) + s
         valid_alignments = T.concatenate([valid_alignments, s.reshape((n, 1))], axis=-1)
