@@ -56,7 +56,7 @@ class ContextRNNLM(NN, LM):
 
         # Get the word for next time step
         scores = T.dot(output, output_embed)
-        greedy_predictions = zero_grad(T.argmax(scores, axis=-1, keepdims=True))
+        greedy_predictions = zero_grad(T.argmax(scores, axis=-1))
         x_next = get_output(self.input_embedding, greedy_predictions)
         return x_next, h_next, output, scores, greedy_predictions
 
