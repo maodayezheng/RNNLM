@@ -1,4 +1,5 @@
 import lasagne
+import theano
 import theano.tensor as T
 from Models.RNNCells import GRU
 from lasagne.layers import get_output
@@ -37,7 +38,9 @@ class ContextRNNLM(NN, LM):
         alignment_scores = self.alignment(h, candidates)
         clip = zero_grad(T.max(alignment_scores, axis=-1))
         alignment_scores = alignment_scores - clip.reshape((n, 1))
+        alignment_scores = theano.printing.Print("The alignment score 1 ")(alignment_scores)
         alignment_scores = T.exp(alignment_scores)
+        alignment_scores = theano.printing.Print("The alignment score 2 ")(alignment_scores)
         valid_alignments = selection * mask * alignment_scores[:, :-1]
         s = alignment_scores[:, -1]
         normalizor = T.sum(valid_alignments, axis=-1) + s
