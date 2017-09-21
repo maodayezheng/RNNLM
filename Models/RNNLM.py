@@ -44,7 +44,7 @@ class ContextRNNLM(NN, LM):
         s = alignment_scores[:, -1]
         normalizor = T.sum(valid_alignments, axis=-1) + s
         valid_alignments = T.concatenate([valid_alignments, s.reshape((n, 1))], axis=-1)
-        valid_score = T.true_div(valid_alignments, normalizor.reshape((n, 1)))
+        valid_score = valid_alignments / normalizor.reshape((n, 1))
         valid_score = theano.printing.Print(" The valid score 2 ")(valid_score)
         context = T.sum(valid_score.reshape((n, l, 1)) * candidates, axis=1)
 
