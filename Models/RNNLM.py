@@ -40,6 +40,8 @@ class ContextRNNLM(NN, LM):
         clip = theano.printing.Print("The clip 1 ")(clip)
         clip = clip.reshape((n, 1))
         clip = theano.printing.Print("The clip 2 ")(clip)
+        a_shape = theano.printing.Print("The alignment score shape ")(alignment_scores.shape)
+        alignment_scores = alignment_scores.reshape(a_shape)
         alignment_scores = alignment_scores - clip
         alignment_scores = theano.printing.Print("The alignment score 1 ")(alignment_scores)
         alignment_scores = T.exp(alignment_scores)
