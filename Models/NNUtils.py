@@ -1,6 +1,7 @@
 import numpy as np
 import theano
 import theano.tensor as T
+from theano.gradient import zero_grad
 from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 from theano.tensor.raw_random import RandomStreamsBase
 from lasagne.layers import EmbeddingLayer, InputLayer, DenseLayer
@@ -37,6 +38,8 @@ class BahdanauAligment(object):
         content = T.tanh(e + s + b)
         score = T.dot(content.reshape((n*l, self.attend_dim)), self.weight_v)
         score = score.reshape((n, l))
+        clip = zero_grad(T.max(score, axis=-1, keepdims=True))
+        score = score - clip
 
         return score
 
