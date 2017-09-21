@@ -1,6 +1,0 @@
-
-['nvcc', '-shared', '-O3', '-m64', '-Xcompiler', '-DCUDA_NDARRAY_CUH=mc72d035fdf91890f3b36710688069b2e,-DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION,-fPIC,-fvisibility=hidden', '-Xlinker', '-rpath,/Users/bowen/.theano/compiledir_Darwin-16.6.0-x86_64-i386-64bit-i386-3.5.2-64/cuda_ndarray', '-I//anaconda/lib/python3.5/site-packages/theano/sandbox/cuda', '-I//anaconda/lib/python3.5/site-packages/numpy/core/include', '-I//anaconda/include/python3.5m', '-I//anaconda/lib/python3.5/site-packages/theano/gof', '-L//anaconda/lib', '-o', '/Users/bowen/.theano/compiledir_Darwin-16.6.0-x86_64-i386-64bit-i386-3.5.2-64/cuda_ndarray/cuda_ndarray.so', 'mod.cu', '-lcublas', '-lcudart', '-Xcompiler', '-undefined,dynamic_lookup', '-Xlinker', '-pie']
- The chosen validation size : 1000
- The chosen validation groups : 40
- The training data size : 19000
- The number of iterations : 8
