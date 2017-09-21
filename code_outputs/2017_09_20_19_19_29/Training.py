@@ -15,7 +15,7 @@ main_dir = sys.argv[0]
 out_dir = sys.argv[2]
 batch_size = 25
 sample_groups = 10
-epoch = 8
+epoch = 1
 vocab_size = 8194
 embed_dim = 2
 hid_dim = 4
@@ -179,4 +179,4 @@ if __name__ == '__main__':
     with open(os.path.join(out_dir, 'model_params.save'), 'wb') as f:
         cPickle.dump(model.get_param_values(), f, protocol=cPickle.HIGHEST_PROTOCOL)
         f.close()
-    print(" Finished training ")
+    print("Finished training ")

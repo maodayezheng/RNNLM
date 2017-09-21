@@ -1,0 +1,66 @@
+
+['nvcc', '-shared', '-O3', '-m64', '-Xcompiler', '-DCUDA_NDARRAY_CUH=mc72d035fdf91890f3b36710688069b2e,-DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION,-fPIC,-fvisibility=hidden', '-Xlinker', '-rpath,/Users/bowen/.theano/compiledir_Darwin-16.6.0-x86_64-i386-64bit-i386-3.5.2-64/cuda_ndarray', '-I//anaconda/lib/python3.5/site-packages/theano/sandbox/cuda', '-I//anaconda/lib/python3.5/site-packages/numpy/core/include', '-I//anaconda/include/python3.5m', '-I//anaconda/lib/python3.5/site-packages/theano/gof', '-L//anaconda/lib', '-o', '/Users/bowen/.theano/compiledir_Darwin-16.6.0-x86_64-i386-64bit-i386-3.5.2-64/cuda_ndarray/cuda_ndarray.so', 'mod.cu', '-lcublas', '-lcudart', '-Xcompiler', '-undefined,dynamic_lookup', '-Xlinker', '-pie']
+ The chosen validation size : 1000
+ The chosen validation groups : 40
+ The training data size : 19000
+ The number of iterations : 609
+Training time 1.3274 sec with sentence length 16
+Total loss 9.002227783203125
+RNN loss 8.933008193969727
+Selection loss 0.6921918392181396
+Average number of selection 0.5199999809265137
+
+Training time 1.3283229999999993 sec with sentence length 16
+Total loss 9.001031875610352
+RNN loss 8.931807518005371
+Selection loss 0.6922425627708435
+Average number of selection 0.49000000953674316
+
+Training time 1.309769000000001 sec with sentence length 16
+Total loss 9.000483512878418
+RNN loss 8.931265830993652
+Selection loss 0.69217848777771
+Average number of selection 0.48750001192092896
+
+Training time 1.334007999999999 sec with sentence length 16
+Total loss 9.00124454498291
+RNN loss 8.932085037231445
+Selection loss 0.6915913224220276
+Average number of selection 0.4975000023841858
+
+Training time 1.3144189999999991 sec with sentence length 16
+Total loss 8.999518394470215
+RNN loss 8.930377006530762
+Selection loss 0.6914094686508179
+Average number of selection 0.45750001072883606
+
+Training time 1.3264000000000014 sec with sentence length 16
+Total loss 8.9989652633667
+RNN loss 8.929892539978027
+Selection loss 0.6907237768173218
+Average number of selection 0.47749999165534973
+
+Training time 1.3179520000000018 sec with sentence length 16
+Total loss 8.999259948730469
+RNN loss 8.930218696594238
+Selection loss 0.6904130578041077
+Average number of selection 0.48500001430511475
+
+Training time 1.3274860000000004 sec with sentence length 16
+Total loss 8.998761177062988
+RNN loss 8.92984676361084
+Selection loss 0.6891441345214844
+Average number of selection 0.5099999904632568
+
+Training time 1.3519269999999999 sec with sentence length 16
+Total loss 8.997212409973145
+RNN loss 8.928236961364746
+Selection loss 0.6897538900375366
+Average number of selection 0.4925000071525574
+
+Training time 1.3539400000000015 sec with sentence length 16
+Total loss 8.99708080291748
+RNN loss 8.928238868713379
+Selection loss 0.688418447971344
+Average number of selection 0.5249999761581421
+
