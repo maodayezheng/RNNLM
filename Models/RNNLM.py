@@ -36,8 +36,7 @@ class ContextRNNLM(NN, LM):
         # Compute the alignment score
         alignment_scores = self.alignment(h, candidates)
         clip = zero_grad(T.max(alignment_scores, axis=-1))
-        alignment_scores -= clip.reshape((n, 1))
-        alignment_scores = T.exp(alignment_scores)
+        alignment_scores = T.exp(alignment_scores - clip.reshape((n, 1)))
         valid_alignments = selection * mask * alignment_scores[:, :-1]
         s = alignment_scores[:, -1]
         normalizor = T.sum(valid_alignments, axis=-1) + s
@@ -103,10 +102,8 @@ class ContextRNNLM(NN, LM):
         output_embed = output_embed.dimshuffle((1, 0, 2))
         true_target_score = T.sum(output_embed * o, axis=-1)
         clip = zero_grad(T.max(output_scores, axis=-1))
-        true_target_score -= clip
-        true_target_score = T.exp(true_target_score)
-        output_scores -= clip.reshape((l, n, 1))
-        output_scores = T.exp(output_scores)
+        true_target_score = T.exp(true_target_score - clip)
+        output_scores = T.exp(output_scores - clip.reshape((l, n, 1)))
         normalizor = T.sum(output_scores, axis=-1)
         output_probs = T.true_div(true_target_score, normalizor)
         num_words = T.sum(encode_mask, axis=-1)
