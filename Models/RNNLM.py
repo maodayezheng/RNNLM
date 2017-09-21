@@ -39,7 +39,7 @@ class ContextRNNLM(NN, LM):
         clip = zero_grad(T.max(alignment_scores, axis=-1))
         clip = theano.printing.Print("The clip 1 ")(clip)
         clip = clip.reshape((n, 1))
-        clip = theano.printing.Print("The clip 1 ")(clip)
+        clip = theano.printing.Print("The clip 2 ")(clip)
         alignment_scores = alignment_scores - clip
         alignment_scores = theano.printing.Print("The alignment score 1 ")(alignment_scores)
         alignment_scores = T.exp(alignment_scores)
