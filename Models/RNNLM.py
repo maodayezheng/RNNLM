@@ -42,7 +42,7 @@ class ContextRNNLM(NN, LM):
         s = alignment_scores[:, -1]
         normalizor = T.sum(valid_alignments, axis=-1) + s
         valid_alignments = T.concatenate([valid_alignments, s.reshape((n, 1))], axis=-1)
-        valid_score = valid_alignments / normalizor.dimshuffle(0, "x")
+        valid_score = valid_alignments / (normalizor.dimshuffle(0, "x") + 1e-5)
         context = T.sum(valid_score.dimshuffle(0, 1, "x") * candidates, axis=1)
 
         # RNN computation
